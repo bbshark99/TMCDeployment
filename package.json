@@ -1,0 +1,30 @@
+{
+  "name": "tmedeployment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^3.2.0",
+    "truffle-flattener": "^1.5.0",
+    "truffle-wallet-provider": "0.0.5"
+  },
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.0.42",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "axios": "^0.21.0",
+    "bluebird": "^3.7.2",
+    "dotenv": "^8.2.0",
+    "solidity-util": "github:willitscale/solidity-util",
+    "truffle": "^5.1.41",
+    "web3": "^1.2.11"
+  }
+}
