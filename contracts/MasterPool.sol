@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./MyOwnable.sol";
 import "./ITMC.sol";
 import "./PausableStaking.sol";
 import "./ITAMAGRewardCalc.sol";
@@ -20,7 +20,7 @@ import "./ITAMAGRewardCalc.sol";
 // distributed and the community can show to govern itself.
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
-contract MasterPool is Ownable, IERC721Receiver, PausableStaking  {
+contract MasterPool is MyOwnable, IERC721Receiver, PausableStaking  {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -103,8 +103,9 @@ contract MasterPool is Ownable, IERC721Receiver, PausableStaking  {
         uint256 _tmcPerBlock,
         uint256 _startBlock,
         uint256 _bonusEndBlock,
-        address _tamagRewardCalc
-    ) public {
+        address _tamagRewardCalc,
+        address _owner
+    ) public MyOwnable(_owner){
         tmc = ITMC(_tmc);
         devAddr = _devAddr;
         tmcPerBlock = _tmcPerBlock;
@@ -112,10 +113,12 @@ contract MasterPool is Ownable, IERC721Receiver, PausableStaking  {
         startBlock = _startBlock;
         tamagRewardCalc = ITAMAGRewardCalc(_tamagRewardCalc);
 
-        pauseDeposit();
+        pauseDeposit(); 
         pauseWithdraw();
     }
-
+    function setTmc(address a) public onlyOwner{
+        tmc = ITMC(a);
+    }
     // MUST MASS UPDATE POOLS FIRST then u can call this!
     function setTMCPerBlock(uint256 i) public onlyOwner{
         tmcPerBlock = i;
@@ -299,10 +302,6 @@ contract MasterPool is Ownable, IERC721Receiver, PausableStaking  {
         }
         user.rewardDebt = user.amount.mul(pool.accTmcPerShare).div(1e12);
     }
-    function depositTamagMulti(uint256 _pid, uint256 tamagId) public whenNotPausedDeposit{
-    
-    }
-
     function depositTamag(uint256 _pid, uint256 tamagId) public whenNotPausedDeposit{
 
         require(isTamagPool(_pid), "not tamag pool");

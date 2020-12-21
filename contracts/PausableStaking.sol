@@ -1,7 +1,8 @@
 pragma solidity ^0.6.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./MyOwnable.sol";
 
-contract PausableStaking is Ownable{
+abstract contract PausableStaking is MyOwnable{
   
     bool public pausedDeposit;
     bool public pausedWithdraw;

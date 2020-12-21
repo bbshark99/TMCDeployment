@@ -1,9 +1,10 @@
 pragma solidity ^0.6.12;
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
+import "./MyOwnable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./ITAMAG.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
-
+import "@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
+import "./TMA.sol";
 
 // each tamag has a virtual amount to represent how much yield it can get.
 // base yield = energy + metabolism
@@ -21,21 +22,86 @@ import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 // others - (5-10)% chance for common + (0.5-1.5)% chance for rare, (0.25-0.75)% chance for ultra rare
 // ranges are based on cheerfulness
 
-
-
-contract TAMAGRewardCalc is Ownable{
+interface ITamagProvider {
+    function getTrait(uint256 tokenId) external view returns (uint256);
+    function ownerOf(uint256 tokenId) external view returns (address);
+    function isEquipped(uint256 tamagId, uint256 equipId) external view returns (bool);
+    function exists(uint256 tokenId) external view returns (bool);
+}
+interface IEquipmentProvider{
+    function balanceOf(address owner, uint256 equipId) external view returns (uint256);
+    function safeTransferFrom(address a, address b, uint256 id, uint256 amt, bytes memory data) external;
+    function bonusEffect(uint256 tokenId) external view returns (uint256);
+}
+contract TAMAGRewardCalc is MyOwnable, ERC1155Holder{
     using SafeMath for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
+    
+    ITamagProvider public oldTamag;
+    ITamagProvider public tamag;
+    IEquipmentProvider public tma;
 
     EnumerableSet.UintSet og1;
     EnumerableSet.UintSet og2;
+    EnumerableSet.UintSet auraEffectEquip;
+    EnumerableSet.UintSet indivEffectEquip;
+    
+    mapping(address => EnumerableSet.UintSet) ownerToAuraEquipDeposited;
+    mapping(address => uint256) public ownerToAuraAmt;
 
-    ITAMAG tamag;
+    function isOG1(uint256 tokenId) public view returns (bool){
+        return og1.contains(tokenId);
+    }
+    function isOG2(uint256 tokenId) public view returns (bool){
+        return og2.contains(tokenId);
+    }
+    function isAuraEffect(uint256 tokenId) public view returns (bool){
+        return auraEffectEquip.contains(tokenId);
+    }
+    function isIndivEffect(uint256 tokenId) public view returns (bool){
+        return indivEffectEquip.contains(tokenId);
+    }
+    function addAura(uint256 tokenId) public onlyOwner{
+        auraEffectEquip.add(tokenId);
+    }
+    function addIndiv(uint256 tokenId) public onlyOwner{
+        indivEffectEquip.add(tokenId);
+    }
+    function removeAura(uint256 tokenId) public onlyOwner{
+        auraEffectEquip.remove(tokenId);
+    }
+    function removeIndiv(uint256 tokenId) public onlyOwner{
+        indivEffectEquip.remove(tokenId);
+    }
+    function addAuraEquip(uint256 equipId) public {
+        require(auraEffectEquip.contains(equipId), "Not an aura equip");
+        require(!ownerToAuraEquipDeposited[_msgSender()].contains(equipId), "Equip already deposited");
+        tma.safeTransferFrom(_msgSender(), address(this), equipId, 1, "0x0");
+        ownerToAuraEquipDeposited[_msgSender()].add(equipId);
+        ownerToAuraAmt[_msgSender()] = ownerToAuraAmt[_msgSender()].add(tma.bonusEffect(equipId));
+    }
+    function removeAuraEquip(uint256 equipId) public {
+        require(auraEffectEquip.contains(equipId), "Not an aura equip");
+        require(ownerToAuraEquipDeposited[_msgSender()].contains(equipId), "Equip not deposited");
+        ownerToAuraEquipDeposited[_msgSender()].remove(equipId);
+        ownerToAuraAmt[_msgSender()] = ownerToAuraAmt[_msgSender()].sub(tma.bonusEffect(equipId));
+        tma.safeTransferFrom(address(this), _msgSender(), equipId, 1, "0x0");
+    }
+    function getAuraEquipSize(address a) public view returns (uint256){
+        return ownerToAuraEquipDeposited[a].length();
+    }
+    function getAuraEquipAtIndex(address a, uint256 i) public view returns (uint256){
+        return ownerToAuraEquipDeposited[a].at(i);
+    }
+    function getAuraEquipContains(address a, uint256 tokenId) public view returns (bool){
+        return ownerToAuraEquipDeposited[a].contains(tokenId);
+    }
 
+    
+    
     uint256 public OG1_BONUS = 130;
     uint256 public OG2_BONUS = 115;
-
-    constructor(address _tamag) public{
+    constructor(address _oldTamag, address _tamag, address _equip, address owner) MyOwnable(owner) public{
         uint8[30] memory og1s = [1,  2,  3,  4,  5,  6,  7,  8,  9,
             10, 11, 12, 13, 14, 15, 16, 17, 18,
             19, 20, 21, 22, 23, 26, 28, 29, 31,
@@ -46,6 +112,21 @@ contract TAMAGRewardCalc is Ownable{
             47, 48, 49, 50, 51, 52, 53, 54,
             55
         ];
+
+        // // wrong array used in initial staking. (off by 1)
+        // // if it's a v1, i take id+1 to check in array (due to old bug, to ensure correct virtual amt when unstaking)
+        // uint8[30] memory og1s = [0,  1,  2,  3,  4,  5,  6,  7,  8,
+        //     9, 10, 11, 12, 13, 14, 15, 16, 17,
+        //     18, 19, 20, 21, 22, 25, 27, 28, 30,
+        //     40, 41, 45];
+        // uint8[25] memory og2s = [
+        //     23, 24, 26, 29, 31, 32, 33, 34,
+        //     35, 36, 37, 38, 39, 42, 43, 44,
+        //     46, 47, 48, 49, 50, 51, 52, 53,
+        //     54
+        //     ];
+
+
         for (uint i = 0; i < 30; i++){
             og1.add(og1s[i]);
         }
@@ -53,7 +134,16 @@ contract TAMAGRewardCalc is Ownable{
             og2.add(og2s[i]);
         }
        
-        tamag = ITAMAG(_tamag);
+        tamag = ITamagProvider(_tamag);
+        oldTamag = ITamagProvider(_oldTamag);
+        tma = IEquipmentProvider(_equip);
+    }
+    
+    function setTamag(address a) public onlyOwner{
+        tamag = ITamagProvider(a);
+    }
+    function setTma(address a) public onlyOwner{
+        tma = IEquipmentProvider(a);
     }
 
     function adOG1(uint tamagId) public onlyOwner {
@@ -73,30 +163,61 @@ contract TAMAGRewardCalc is Ownable{
         address payable p = payable(owner());
         selfdestruct(p); 
     }
-    function getTamagTrait(uint256 tamagId) public view returns (uint256, uint256, uint256, uint256) {
-        uint256 trait = tamag.getTrait(tamagId);
-        uint256 cheerfulness = getCheerfulness(trait);
-        uint256 energy = getEnergy(trait);
-        uint256 metabolism = getMetabolism(trait);
-        return (trait, cheerfulness, energy, metabolism);
-    }
+
+    // effects
+    // energy + metabolism
+    // OG1/2
+    // ghost aura effect
+    // indiv equip effect
     // make sure this amt roughly on same magnitude with 1e18
     function getVirtualAmt(uint256 tamagId) public view returns (uint256) {
-        uint256 trait = tamag.getTrait(tamagId);
+        // cater to both tamag versions. Assume that any id is only either V1 OR V2, not both.
+        uint256 trait = 0;
+        bool isV2 = tamag.exists(tamagId);
+
+        if (isV2){
+            // it's a V2;
+            trait = tamag.getTrait(tamagId);
+        } else {
+            trait = oldTamag.getTrait(tamagId);
+        }
+
         // uint256 cheerfulness = getCheerfulness(trait);
         uint256 energy = getEnergy(trait);
         uint256 metabolism = getMetabolism(trait);
         // values obtained are out of 0-31 inclusive
         
         uint256 result = energy.add(metabolism).mul(1e18); // range of 0-64 1E18
-        if (og1.contains(tamagId)){
+        uint256 tempTamagId = isV2 ? tamagId : tamagId + 1; // see constructor for explanation
+        if (og1.contains(tempTamagId)){
             result = result.mul(OG1_BONUS).div(100);
-        }else if (og2.contains(tamagId)){
+        }else if (og2.contains(tempTamagId)){
             result = result.mul(OG2_BONUS).div(100);
         }
+
+        if (isV2){
+            uint256 bonuses = getBonuses(tamagId);
+            if (bonuses > 0){
+                result = result.mul(bonuses.add(100)).div(100);
+            }
+        }
+
         return result;
     }
+    function getBonuses(uint256 tamagId) public view returns (uint256){
 
+        // aura effects - check owner acc
+        uint256 bonus = ownerToAuraAmt[tamag.ownerOf(tamagId)];
+        
+        // check items equipped on tamag
+        for (uint256 i = 0; i < indivEffectEquip.length(); i++){
+            uint256 equipId = indivEffectEquip.at(i);
+            if (tamag.isEquipped(tamagId, equipId)){
+                bonus = bonus.add(tma.bonusEffect(equipId));
+            }
+        }
+        return bonus;
+    }
     function _sliceNumber(uint256 _n, uint8 _nbits, uint8 _offset) private pure returns (uint8) {
         // mask is made by shifting left an offset number of times
         uint256 mask = uint256((2**uint256(_nbits)) - 1) << _offset;
@@ -104,13 +225,13 @@ contract TAMAGRewardCalc is Ownable{
         return uint8((_n & mask) >> _offset);
     }
 
-    function getCheerfulness(uint256 trait) public view returns (uint256) {
+    function getCheerfulness(uint256 trait) public pure returns (uint256) {
         return _sliceNumber(trait, 5, 0);
     }
-    function getEnergy(uint256 trait) public view returns (uint256) {
+    function getEnergy(uint256 trait) public pure returns (uint256) {
         return _sliceNumber(trait, 5, 5);
     }
-    function getMetabolism(uint256 trait) public view returns (uint256) {
+    function getMetabolism(uint256 trait) public pure returns (uint256) {
         return _sliceNumber(trait, 5, 10);
     }
     function setOG1_BONUS(uint256 bonus) public onlyOwner {

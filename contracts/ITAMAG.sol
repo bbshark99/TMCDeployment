@@ -4,10 +4,13 @@ interface ITAMAG {
     function hatch(address player, uint256 trait, string memory tokenURI) external returns (uint256);
 
     function getTrait(uint256 tokenId) external view returns (uint256);
+    function traits(uint256 tokenId) external view returns (uint256);
+    function idToNounce(uint256 tokenId) external view returns (uint256);
 
     function balanceOf(address owner) external view returns (uint256);
     function ownerOf(uint256 tokenId) external view returns (address);
-
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
+    
         /**
      * @dev Returns the total amount of tokens stored by the contract.
      */
@@ -22,5 +25,6 @@ interface ITAMAG {
     function setApprovalForAll(address operator, bool _approved) external;
 
     function approve(address to, uint256 tokenId) external;
+    function burn(uint256 tokenId) external;
     
 }

@@ -42,25 +42,33 @@ module.exports = async function(callback) {
     // Fetch accounts from wallet - these are unlocked
     const accounts = await web3.eth.getAccounts()
     
-    const tme = await IERC20.at(process.env.TME);
-    const tmc = await TMC.at("0xe13559cf6eDf84bD04bf679e251f285000B9305E");
-    const rewardCalc = await TAMAGRewardCalc.at("0x000a0e383aa583e759028CEeeceB07498f0aa4A0");
-    const masterPool = await MasterPool.at("0x2474411A0ac484B5F8101C2E1EFbace4BdBebC8f");
+    // const tme = await IERC20.at(process.env.TME);
+    const tmc = await TMC.at("0x3775eAd9A57185ABc20bE2bBef75625d310d479b");
+    // const rewardCalc = await TAMAGRewardCalc.at("0x000a0e383aa583e759028CEeeceB07498f0aa4A0");
+    const masterPool = await MasterPool.at("0x4740D032998b4CeC04DbF49ba1bb8196b0C6eB14");
     const tamag = await ITAMAG.at(process.env.TAMAG);
     let routerAdd = process.env.UNISWAP_ROUTER_ADD;
 
     const router = await IUniswapV2Router.at(routerAdd);
+    // let n = await masterPool.poolLength();
+    // await masterPool.set(2,0,true)
+    // await masterPool.addTamagPool("45", "0xBD2Ff44563e1fBF72D28F07E3D3C68AF3eaAB27e", true);
+    let test1 = await masterPool.getUserInfo(3, accounts[0]);
 
-    console.log("tmc", tmc.address);
-    console.log("rewardCalc", rewardCalc.address);
-    console.log("masterPool", masterPool.address);
-    console.log("tamag", tamag.address)
-
-    await masterPool.unpauseDeposit();
-    await masterPool.unpauseWithdraw();
-    await tmc.unpause();
+    console.log(test1[0].toString());
+    // console.log(n.toString())
     callback()
-    return
+    return;
+    // console.log("tmc", tmc.address);
+    // console.log("rewardCalc", rewardCalc.address);
+    // console.log("masterPool", masterPool.address);
+    // console.log("tamag", tamag.address)
+
+    // await masterPool.unpauseDeposit();
+    // await masterPool.unpauseWithdraw();
+    // await tmc.unpause();
+    // callback()
+    // return
 
     // let tmcInternalBal = await tmc.balanceOf(tmc.address);
     // console.log(new BigNumber(tmcInternalBal).dividedBy(1E18).toString())
@@ -92,52 +100,62 @@ module.exports = async function(callback) {
     // callback();
     // return;
 
-    // add to pool
-    try{
-      // TAMAG pool
-      await masterPool.getPool(0);
-    } catch {
-      await masterPool.addTamagPool("45", tamag.address, true);
-    }
-    try{
-      // TME pool
-      await masterPool.getPool(1);
-    } catch {
-      await masterPool.add("15", tme.address, true);
-    }
-    try{
-      // TMC pool
-      await masterPool.getPool(2);
-    } catch {
-      await masterPool.add("15", tmc.address, true);
-    }
+    // // add to pool
+    // try{
+    //   // TAMAG pool
+    //   await masterPool.getPool(0);
+    // } catch {
+    //   await masterPool.addTamagPool("45", tamag.address, true);
+    // }
+    // try{
+    //   // TME pool
+    //   await masterPool.getPool(2);
+    // } catch {
+    //   await masterPool.addTamagPool("45", "0x23a81C61946AcE814d7eA52ee83DC72a03C2ec11", true);
+    // }
+    // try{
+    //   // TMC pool
+    //   await masterPool.getPool(2);
+    // } catch {
+    //   await masterPool.add("15", tmc.address, true);
+    // }
 
-    try{
-      // TMC/TME pool
-      await masterPool.getPool(3);
-    } catch {
-      let facAdd = process.env.UNISWAP_FACTORY_ADD;
-      let fac = await IUniswapV2Factory.at(facAdd);
-      let pairAdd = await fac.getPair(tmc.address, tme.address);
-      console.log("pairAdd", pairAdd);
-      await masterPool.add("25", pairAdd, true);
-    }
-    try{
-      // TME/WETH pool
-      await masterPool.getPool(4);
-    } catch {
-      let facAdd = process.env.UNISWAP_FACTORY_ADD;
-      let fac = await IUniswapV2Factory.at(facAdd);
-      let pairAdd = await fac.getPair(tme.address, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2");
-      console.log("pairAdd", pairAdd);
-      await masterPool.add("25", pairAdd, true);
-    }
+    // try{
+    //   // TMC/TME pool
+    //   await masterPool.getPool(3);
+    // } catch {
+    //   let facAdd = process.env.UNISWAP_FACTORY_ADD;
+    //   let fac = await IUniswapV2Factory.at(facAdd);
+    //   let pairAdd = await fac.getPair(tmc.address, tme.address);
+    //   console.log("pairAdd", pairAdd);
+    //   await masterPool.add("25", pairAdd, true);
+    // }
+    // try{
+    //   // TME/WETH pool
+    //   await masterPool.getPool(4);
+    // } catch {
+    //   let facAdd = process.env.UNISWAP_FACTORY_ADD;
+    //   let fac = await IUniswapV2Factory.at(facAdd);
+    //   let pairAdd = await fac.getPair(tme.address, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2");
+    //   console.log("pairAdd", pairAdd);
+    //   await masterPool.add("25", pairAdd, true);
+    // }
+
+    // try{
+    //   // TME/WETH pool
+    //   await masterPool.getPool(5);
+    // } catch {
+    //   await masterPool.addTamagPool("45", "0xF5af164B3c6497b680E4ce26a2b74b22493ECEC3", true);
+    // }
+    // await masterPool.set(0,0,true);
 
     await printPoolInfo(masterPool, 0);
-    await printPoolInfo(masterPool, 1);
     await printPoolInfo(masterPool, 2);
     await printPoolInfo(masterPool, 3);
-    await printPoolInfo(masterPool, 4);
+    // await printPoolInfo(masterPool, 2);
+    // await printPoolInfo(masterPool, 3);
+    // await printPoolInfo(masterPool, 4);
+    // await printPoolInfo(masterPool, 5);
 
     callback()
     return

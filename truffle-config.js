@@ -8,6 +8,9 @@ const web3 = require('web3')
 var BN = web3.utils.BN
 
 module.exports = {
+  plugins: [
+    'truffle-contract-size'
+  ],
   networks: {
     development: {
       host: '127.0.0.1',
@@ -23,7 +26,7 @@ module.exports = {
       skipDryRun: true,
       gas: 10000000,
       networkCheckTimeout: 30000,
-      gasPrice: web3.utils.toWei('50', 'gwei') // 100 gwei
+      gasPrice: web3.utils.toWei('100', 'gwei') // 100 gwei
     },
     rinkeby: {
       provider: () =>
@@ -33,8 +36,8 @@ module.exports = {
         ),
         skipDryRun: true,
       network_id: 4,
-      gas: 6800000, // Gas limit used for deploys
-      gasPrice: web3.utils.toWei('100', 'gwei') // 100 gwei
+      gas: 10000000, // Gas limit used for deploys
+      gasPrice: web3.utils.toWei('50', 'gwei') // 100 gwei
     },
 
     ropsten: {
@@ -60,9 +63,9 @@ module.exports = {
           'https://mainnet.infura.io/v3/' + INFURA_API_KEY
         ),
       network_id: 1,
-      gas: 10000000,
+      gas: 8000000,
       skipDryRun: true,
-      gasPrice: String(web3.utils.toWei('55', 'gwei'))
+      gasPrice: String(web3.utils.toWei('50', 'gwei'))
     }
   },
   compilers: {

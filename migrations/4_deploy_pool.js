@@ -11,8 +11,8 @@ module.exports = async (deployer, network, accounts) => {
   console.log('blocknumber',block.number)
 
   console.log('deploying from:' + deployAddress)
-  const tmc = await TMC.at("0xe13559cf6eDf84bD04bf679e251f285000B9305E");
-  const tamagRewardCalc = await TAMAGRewardCalc.deployed();
+  const tmc = await TMC.at("0x3775eAd9A57185ABc20bE2bBef75625d310d479b");
+  const tamagRewardCalc = await TAMAGRewardCalc.at("0x670B2cAc04011AabdA130Be652269e6C9266A2Ae");
 
   // let tmcPerBlock = "40000000000000000000";
   // let startBlock = block.number;
@@ -27,12 +27,12 @@ module.exports = async (deployer, network, accounts) => {
   let tmcAdd = tmc.address;
   let devAdd = "0xC2884De64ceFF15211Bb884a1E84F5aeaD9fdc7c"
   let tmcPerBlock = "40000000000000000000"
-  let startBlock = targetBlock
-  let bonusEndBlock = targetBlock
+  let startBlock = block.number
+  let bonusEndBlock = block.number
   let rewardCalcAdd = tamagRewardCalc.address;
 
   console.log(tmcAdd, devAdd, tmcPerBlock, startBlock, bonusEndBlock, rewardCalcAdd);
-  await deployer.deploy(MasterPool, tmcAdd, accounts[0], tmcPerBlock, startBlock, bonusEndBlock, rewardCalcAdd, {
+  await deployer.deploy(MasterPool, tmcAdd, accounts[0], tmcPerBlock, startBlock, bonusEndBlock, rewardCalcAdd, accounts[0], {
     from: deployAddress
   })
 

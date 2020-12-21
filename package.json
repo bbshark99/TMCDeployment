@@ -25,6 +25,7 @@
     "dotenv": "^8.2.0",
     "solidity-util": "github:willitscale/solidity-util",
     "truffle": "^5.1.41",
+    "truffle-contract-size": "^2.0.1",
     "web3": "^1.2.11"
   }
 }

@@ -1,6 +1,0 @@
-{
-	"name": "Chef Hat",
-	"description": "A chef hat for the brave TAMAGs who enter the kitchen first.",
-	"image": "ipfs://ipfs/QmdPnS6QxzahTNPF2ox53inBas7uPrJQR8VSC8hc5RimaS",
-	"attributes":[{"display_type":"boost_number","trait_type":"Cheerfulness","value":77.42,"max_value":100},{"display_type":"boost_number","trait_type":"Energy","value":35.48,"max_value":100},{"display_type":"boost_number","trait_type":"Metabolism","value":22.58,"max_value":100},{"trait_type":"Favorite Color","value":"#04BF68"},{"display_type":"number","trait_type":"Generation","value":1},{"trait_type":"Stage","value":"baby"},{"display_type":"date","trait_type":"birthday","value":"1607588426"}]}
-}
