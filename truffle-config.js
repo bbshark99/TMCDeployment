@@ -37,7 +37,7 @@ module.exports = {
         skipDryRun: true,
       network_id: 4,
       gas: 10000000, // Gas limit used for deploys
-      gasPrice: web3.utils.toWei('50', 'gwei') // 100 gwei
+      gasPrice: web3.utils.toWei('100', 'gwei') // 100 gwei
     },
 
     ropsten: {
@@ -65,7 +65,7 @@ module.exports = {
       network_id: 1,
       gas: 8000000,
       skipDryRun: true,
-      gasPrice: String(web3.utils.toWei('50', 'gwei'))
+      gasPrice: String(web3.utils.toWei('80', 'gwei'))
     }
   },
   compilers: {

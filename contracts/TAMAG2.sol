@@ -162,6 +162,6 @@ contract TAMAG2 is MyOwnable, Pausable, ERC721, TAMAGProperties, ERC721Burnable,
         emit UnEquipped(tamagId, equipId, slot);
         
         equipmentContract.safeTransferFrom(address(this), owner, equipId, 1, "0x0");
-    }   
+    }
 
 }

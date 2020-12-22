@@ -1,6 +1,7 @@
 
 // Contracts
 const TMA = artifacts.require("TMA");
+const TMADispense = artifacts.require("TMADispense");
 const MasterPool = artifacts.require("MasterPool");
 const axios = require("axios");
 // const TMEHatchery = artifacts.require("TMEHatchery");
@@ -17,18 +18,43 @@ module.exports = async function(callback) {
     // Fetch accounts from wallet - these are unlocked
     const accounts = await web3.eth.getAccounts()
     // const pool = await MasterPool.at("0x2474411A0ac484B5F8101C2E1EFbace4BdBebC8f");
-    const tma = await TMA.at("0x21dd1709ee66fa86ec1901d5c671884787fa1b9e");
+    const tma = await TMA.at(process.env.TMA);
+    const dispense = await TMADispense.at(process.env.TMADISPENSE)
     // await tma.mint(accounts[0],1,7,"0x0"); // 7 golden chef hats
     // await tma.mint(accounts[0],2,31,"0x0"); // 31 chef hats
     // await tma.mint(accounts[0],3,4,"0x0"); // 4 ghosts
+    // let test = await tma.setURI("ipfs://ipfs/QmQn4BTG8WqMoUwZFwyEpyC9cyKEFj4KYxHm1ks8n829PC/{id}.json");
+    
+    // let test = await dispense.createSales(4, true, 1, 0);
+    // test = await dispense.createSales(5, true, 1, 0);
+    // test = await dispense.createSales(6, true, 1, 0);
 
-    // let a = await tma.mintBatch(accounts[0], [1,2,3],[7,32,4], "0x0")
+    // let a = await tma.balanceOf(dispense.address, 4);
+    // let b = await tma.balanceOf(dispense.address, 5);
+    // let c = await tma.balanceOf(dispense.address, 6);
+    // console.log(a.toString(),b.toString(),c.toString())
+    // console.log(dispense.address)
+    // let test = await tma.safeTransferFrom(accounts[0], dispense.address, 4, 100, "0x0")
+    // let test = await dispense.createSales(4, true, 1, 0);
+    // test = await dispense.createSales(5, true, 1, 0);
+    // test = await dispense.createSales(6, true, 1, 0);
+    // let test = await tma.uri(1);
+    // console.log(test);
+    // let a = await tma.mintBatch(dispense.address, [4,5,6],[100,100,100], "0x0")
     // console.log(a);
+
+
+    await tma.setBonusEffect(4,1);
+    await tma.setBonusEffect(5,1);
+    await tma.setBonusEffect(6,1);
+    await rewardCalc.addIndiv(4);
+    await rewardCalc.addIndiv(5);
+    await rewardCalc.addIndiv(6);
     // let b1 = await tma.balanceOf(accounts[0],1);
     // console.log(b1.toString())
-    // callback()
-    // return;
-    // const url = await tma.uri(1);
+    callback()
+    return;
+    const url = await tma.uri(1);
     // airdrop for white chef hat, find DepositTamag events
     // let whitechefhatusers = new Set();
     // let events = await pool.getPastEvents("DepositTamag", { fromBlock: 0, toBlock: 11452096 });

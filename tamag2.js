@@ -41,7 +41,7 @@ module.exports = async function(callback) {
     // await rewardcalc.removeAura(3);
     // await rewardcalc.addIndiv(3);
     // await rewardcalc.addIndiv(1);
-    let test2 = await tma.setURI("ipfs://ipfs/QmZmpH9gTMmEkFBvThNBg2bMqFEWK1T7vQP1jRLuYGsi62/{id}.json");
+    // let test2 = await tma.setURI("ipfs://ipfs/Qmcz8sM6ATxro7HgmNVSiTeS98tbnS4fQesJikEokLfroo/{id}.json");
     // console.log(test2)
     // tma change - update rewardcalc, tamag2, manager
     // await rewardcalc.setTma(tma.address);

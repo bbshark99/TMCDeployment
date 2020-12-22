@@ -16,7 +16,7 @@ contract TMA is
 
     constructor(string memory _name, string memory _symbol, address owner) public MyOwnable(owner) {
         name = _name;
-    symbol = _symbol;
+        symbol = _symbol;
 
         // _setupRole(DEFAULT_ADMIN_ROLE, owner);
         // _setupRole(MINTER_ROLE, owner);
